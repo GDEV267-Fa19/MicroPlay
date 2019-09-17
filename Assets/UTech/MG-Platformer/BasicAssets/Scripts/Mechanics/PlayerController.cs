@@ -35,6 +35,8 @@ namespace Platformer.Mechanics
         public bool controlEnabled = true;
 
         bool jump;
+        bool doubleJump;
+        bool hasDoubleJumped = false;
         Vector2 move;
         SpriteRenderer spriteRenderer;
         internal Animator animator;
@@ -58,6 +60,12 @@ namespace Platformer.Mechanics
                 move.x = Input.GetAxis("Horizontal");
                 if (jumpState == JumpState.Grounded && Input.GetButtonDown("Jump"))
                     jumpState = JumpState.PrepareToJump;
+                else if (jumpState == JumpState.InFlight && 
+                    Input.GetButtonDown("Jump") && !hasDoubleJumped)
+                {
+                    jumpState = JumpState.Jumping;
+                    doubleJump = true;
+                }
                 else if (Input.GetButtonUp("Jump"))
                 {
                     stopJump = true;
@@ -108,6 +116,14 @@ namespace Platformer.Mechanics
             {
                 velocity.y = jumpTakeOffSpeed * model.jumpModifier;
                 jump = false;
+                hasDoubleJumped = false;
+            }
+            else if (doubleJump && !IsGrounded)
+            {
+                velocity.y = jumpTakeOffSpeed * model.jumpModifier;
+                jump = false;
+                doubleJump = false;
+                hasDoubleJumped = true;
             }
             else if (stopJump)
             {
